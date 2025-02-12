@@ -56,7 +56,7 @@ on:
             "downloadLink": "https://rustdesk.com/download",
             "delayFix": "true",
             "version": "master",
-            "rdgen": "true",
+
             "cycleMonitor": "false",
             "xOffline": "false",
             "hidecm": "false",
