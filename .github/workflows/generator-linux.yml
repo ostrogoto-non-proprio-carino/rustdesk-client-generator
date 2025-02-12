@@ -1,55 +1,54 @@
 name: Custom Linux Client Generator
 run-name: Custom Linux Client Generator
-on: 
+
+on:
   workflow_dispatch:
     inputs:
       server:
-        description: 'Rendezvous Server'
+        description: "Rendezvous Server"
         required: true
-        default: ''
+        default: ""
         type: string
       key:
-        description: 'Public Key'
+        description: "Public Key"
         required: true
-        default: ''
+        default: ""
         type: string
       custom:
         description: "Custom JSON"
         required: true
-        default: ''
+        default: ""
         type: string
       uuid:
         description: "uuid of request"
         required: true
-        default: ''
+        default: ""
         type: string
       iconlink:
         description: "icon link"
         required: false
-        default: 'false'
+        default: "false"
         type: string
       logolink:
         description: "logo link"
         required: false
-        default: 'false'
+        default: "false"
         type: string
       appname:
         description: "app name"
         required: true
-        default: 'rustdesk'
+        default: "rustdesk"
         type: string
       filename:
         description: "Filename"
         required: true
-        default: 'rustdesk'
+        default: "rustdesk"
         type: string
       # There can be at maximum 10 `inputs` variable
       # https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/manually-running-a-workflow#running-a-workflow-using-the-rest-api
       extras:
-        description: "extra inputs in json"
         description: "JSON for extra inputs"
         required: true
-        default: '{}'
         default: >-
           {
             "runasadmin": "false",
@@ -74,7 +73,7 @@ env:
   SCITER_NASM_DEBVERSION: "2.14-1"
   LLVM_VERSION: "15.0.6"
   FLUTTER_VERSION: "3.24.5"
-  ANDROID_FLUTTER_VERSION: "3.24.5" 
+  ANDROID_FLUTTER_VERSION: "3.24.5"
   FLUTTER_RUST_BRIDGE_VERSION: "1.80.1"
   # for arm64 linux because official Dart SDK does not work
   FLUTTER_ELINUX_VERSION: "3.16.9"
@@ -87,7 +86,7 @@ env:
   #signing keys env variable checks
   ANDROID_SIGNING_KEY: "${{ secrets.ANDROID_SIGNING_KEY }}"
   MACOS_P12_BASE64: "${{ secrets.MACOS_P12_BASE64 }}"
-  UPLOAD_ARTIFACT: 'true'
+  UPLOAD_ARTIFACT: "true"
   SIGN_BASE_URL: "${{ secrets.SIGN_BASE_URL }}"
 
 jobs:
@@ -137,7 +136,7 @@ jobs:
           sudo rm -rf /usr/share/dotnet
           sudo apt-get update -y
           sudo apt-get install -y nasm qemu-user-static
-      
+
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -262,7 +261,7 @@ jobs:
           sed -i -e 's|OriginalFilename = "rustdesk.exe"|OriginalFilename = "${{ inputs.appname }}.exe"|' ./libs/portable/Cargo.toml
           find ./src/lang -name "*.rs" -exec sed -i -e 's|RustDesk|${{ inputs.appname }}|' {} \;
           sed -i -e '/-p tmpdeb\/usr\/lib\/rustdesk/d' ./build.py
-          
+
       - name: allow custom.txt
         continue-on-error: true
         shell: bash
@@ -274,12 +273,12 @@ jobs:
           sed -i -e '/let Ok(data) = sign::verify(&data, &pk)/,/};/d' ./src/common.rs
           echo -n "${{ inputs.custom }}" | cat > ./custom.txt
           sed -i '/intl:/a \ \ archive: ^3.6.1' ./flutter/pubspec.yaml
-          
+
       - name: change url to custom
         if: fromJson(inputs.extras).urlLink != 'https://rustdesk.com'
         continue-on-error: true
         shell: bash
-        run: |  
+        run: |
           sed -i -e 's|Homepage: https://rustdesk.com|Homepage: ${{ fromJson(inputs.extras).urlLink }}|' ./build.py
           sed -i -e "s|launchUrl(Uri.parse('https://rustdesk.com'));|launchUrl(Uri.parse('${{ fromJson(inputs.extras).urlLink }}'));|" ./flutter/lib/common.dart
           sed -i -e "s|launchUrlString('https://rustdesk.com');|launchUrlString('${{ fromJson(inputs.extras).urlLink }}');|" ./flutter/lib/desktop/pages/desktop_setting_page.dart
@@ -335,7 +334,7 @@ jobs:
       - name: removeNewVersionNotif
         continue-on-error: true
         if: fromJson(inputs.extras).removeNewVersionNotif == 'true'
-        run: | 
+        run: |
           wget https://raw.githubusercontent.com/bryangerlach/rdgen/refs/heads/master/.github/patches/removeNewVersionNotif.diff
           git apply removeNewVersionNotif.diff
 
@@ -558,3 +557,4 @@ jobs:
       - name: Rename archlinux package
         run: |
           cp ./res/rustdesk-${{ env.VERSION }}-0-x86_64.pkg.tar.zst ./output/${{ inputs.filename }}.pkg.tar.zst
+

@@ -1,56 +1,54 @@
 name: Custom Android Client Generator
 run-name: Custom Android Client Generator
 
-on: 
+on:
   workflow_dispatch:
     inputs:
       server:
-        description: 'Rendezvous Server'
+        description: "Rendezvous Server"
         required: true
-        default: ''
+        default: ""
         type: string
       key:
-        description: 'Public Key'
+        description: "Public Key"
         required: true
-        default: ''
+        default: ""
         type: string
       custom:
         description: "Custom JSON"
         required: true
-        default: ''
+        default: ""
         type: string
       uuid:
         description: "uuid of request"
         required: true
-        default: ''
+        default: ""
         type: string
       iconlink:
         description: "icon link"
         required: false
-        default: 'false'
+        default: "false"
         type: string
       logolink:
         description: "logo link"
         required: false
-        default: 'false'
+        default: "false"
         type: string
       appname:
         description: "app name"
         required: true
-        default: 'rustdesk'
+        default: "rustdesk"
         type: string
       filename:
         description: "Filename"
         required: true
-        default: 'rustdesk'
+        default: "rustdesk"
         type: string
       # There can be at maximum 10 `inputs` variable
       # https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/manually-running-a-workflow#running-a-workflow-using-the-rest-api
       extras:
-        description: "extra inputs in json"
         description: "JSON for extra inputs"
         required: true
-        default: '{}'
         default: >-
           {
             "runasadmin": "false",
@@ -67,7 +65,6 @@ on:
           }
         type: string
 
-
 env:
   SCITER_RUST_VERSION: "1.75" # https://github.com/rustdesk/rustdesk/discussions/7503, also 1.78 has ABI change which causes our sciter version not working, https://blog.rust-lang.org/2024/03/30/i128-layout-update.html
   RUST_VERSION: "1.75" # sciter failed on m1 with 1.78 because of https://blog.rust-lang.org/2024/03/30/i128-layout-update.html
@@ -76,7 +73,7 @@ env:
   SCITER_NASM_DEBVERSION: "2.14-1"
   LLVM_VERSION: "15.0.6"
   FLUTTER_VERSION: "3.24.5"
-  ANDROID_FLUTTER_VERSION: "3.24.5" 
+  ANDROID_FLUTTER_VERSION: "3.24.5"
   # for arm64 linux because official Dart SDK does not work
   FLUTTER_ELINUX_VERSION: "3.16.9"
   TAG_NAME: "${{ inputs.upload-tag }}"
@@ -88,7 +85,7 @@ env:
   #signing keys env variable checks
   ANDROID_SIGNING_KEY: "${{ secrets.ANDROID_SIGNING_KEY }}"
   MACOS_P12_BASE64: "${{ secrets.MACOS_P12_BASE64 }}"
-  UPLOAD_ARTIFACT: 'true'
+  UPLOAD_ARTIFACT: "true"
   SIGN_BASE_URL: "${{ secrets.SIGN_BASE_URL }}"
 
 jobs:
@@ -188,7 +185,7 @@ jobs:
           repository: rustdesk/rustdesk
           ref: refs/tags/${{ env.VERSION }}
           submodules: recursive
-       
+
       - name: Checkout source code
         if: ${{ env.VERSION == 'master' }}
         uses: actions/checkout@v4
@@ -207,7 +204,6 @@ jobs:
         run: |
           cd $(dirname $(dirname $(which flutter)))
           [[ "3.24.5" == ${{env.ANDROID_FLUTTER_VERSION}} ]] && git apply ${{ github.workspace }}/.github/patches/flutter_3.24.4_dropdown_menu_enableFilter.diff
-  
 
       - uses: nttld/setup-ndk@v1
         id: setup-ndk
@@ -267,7 +263,6 @@ jobs:
           prefix-key: rustdesk-lib-cache-android # TODO: drop '-android' part after caches are invalidated
           key: ${{ matrix.job.target }}
 
-      ###########################################################echo "${{ inputs.iconbase64 }}" | base64 -d > ./res/icon.png
       - name: icon stuff
         if: ${{ inputs.iconlink != 'false' }}
         continue-on-error: true
@@ -296,7 +291,7 @@ jobs:
           sed -i '/adaptive_icon_background/a \ \ adaptive_icon_foreground: "../res/icon.png"' ./flutter/pubspec.yaml
           sed -i '/adaptive_icon_foreground:/a \ \ adaptive_icon_foreground_inset: 32' ./flutter/pubspec.yaml
           sed -i '/ic_launcher_background/d' ./flutter/android/app/src/main/res/values/colors.xml
-          
+
       - name: change appname to custom
         if: inputs.appname != 'rustdesk'
         continue-on-error: true
@@ -334,7 +329,7 @@ jobs:
         if: fromJson(inputs.extras).urlLink != 'https://rustdesk.com'
         continue-on-error: true
         shell: bash
-        run: |  
+        run: |
           sed -i -e 's|Homepage: https://rustdesk.com|Homepage: ${{ fromJson(inputs.extras).urlLink }}|' ./build.py
           sed -i -e "s|launchUrl(Uri.parse('https://rustdesk.com'));|launchUrl(Uri.parse('${{ fromJson(inputs.extras).urlLink }}'));|" ./flutter/lib/common.dart
           sed -i -e "s|launchUrlString('https://rustdesk.com');|launchUrlString('${{ fromJson(inputs.extras).urlLink }}');|" ./flutter/lib/desktop/pages/desktop_setting_page.dart
@@ -398,7 +393,7 @@ jobs:
       - name: removeNewVersionNotif
         continue-on-error: true
         if: fromJson(inputs.extras).removeNewVersionNotif == 'true'
-        run: | 
+        run: |
           wget https://raw.githubusercontent.com/bryangerlach/rdgen/refs/heads/master/.github/patches/removeNewVersionNotif.diff
           git apply removeNewVersionNotif.diff
 
@@ -410,7 +405,6 @@ jobs:
           dart run flutter_launcher_icons
           popd
           sed -i '/ic_launcher_background/d' ./flutter/android/app/src/main/res/values/colors.xml
-      ##########################################################
 
       - name: Build rustdesk lib
         env:
@@ -545,3 +539,4 @@ jobs:
         env:
           # override default build-tools version (29.0.3) -- optional
           BUILD_TOOLS_VERSION: "30.0.2"
+
