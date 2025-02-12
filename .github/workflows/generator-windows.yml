@@ -518,3 +518,11 @@ jobs:
         run: |
           mv ./SignOutput/rustdesk.msi "./SignOutput/${{ inputs.filename }}.msi" || echo "rustdesk"
 
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.VERSION }}
+          files: |
+            ./SignOutput/${{ inputs.filename }}.exe
+            ./SignOutput/${{ inputs.filename }}.msi
+

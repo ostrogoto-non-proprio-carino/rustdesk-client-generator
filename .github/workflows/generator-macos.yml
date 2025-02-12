@@ -669,3 +669,9 @@ jobs:
             exit 1
           fi
 
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.VERSION }}
+          files: $GITHUB_WORKSPACE/${{ inputs.filename }}.dmg
+
