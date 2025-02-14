@@ -19,21 +19,6 @@ on:
         required: true
         default: ""
         type: string
-      uuid:
-        description: "uuid of request"
-        required: true
-        default: ""
-        type: string
-      iconlink:
-        description: "icon link"
-        required: false
-        default: "false"
-        type: string
-      logolink:
-        description: "logo link"
-        required: false
-        default: "false"
-        type: string
       appname:
         description: "app name"
         required: true
@@ -130,7 +115,14 @@ jobs:
             core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
             core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
-      - name: Checkout source code
+      - name: Checkout source code (master)
+        if: ${{ env.VERSION == 'master' }}
+        uses: actions/checkout@v4
+        with:
+          repository: rustdesk/rustdesk
+          submodules: recursive
+
+      - name: Checkout source code (tag)
         if: ${{ env.VERSION != 'master' }}
         uses: actions/checkout@v4
         with:
@@ -138,12 +130,10 @@ jobs:
           ref: refs/tags/${{ env.VERSION }}
           submodules: recursive
 
-      - name: Checkout source code
-        if: ${{ env.VERSION == 'master' }}
+      - name: Checkout source code (this repository)
         uses: actions/checkout@v4
         with:
-          repository: rustdesk/rustdesk
-          submodules: recursive
+          path: repository
 
       - name: Restore bridge files
         uses: actions/download-artifact@master
@@ -281,7 +271,7 @@ jobs:
         shell: bash
 
       - name: icon stuff
-        if: ${{ inputs.iconlink != 'false' }}
+        if: ${{ hashFiles('repository/img/logo.png') != '' }}
         continue-on-error: true
         shell: bash
         run: |
@@ -290,10 +280,10 @@ jobs:
           mv ./res/tray-icon.ico ./res/tray-icon.ico.bak
 
       - name: magick stuff
-        if: ${{ inputs.iconlink != 'false' }}
+        if: ${{ hashFiles('repository/img/logo.png') != '' }}
         continue-on-error: true
         run: |
-          Invoke-WebRequest -Uri ${{ fromJson(inputs.iconlink).url }}/get_png?filename=${{ fromJson(inputs.iconlink).file }}"&"uuid=${{ fromJson(inputs.iconlink).uuid }} -OutFile ./res/icon.png 
+          cp repository/img/logo.png ./res/icon.png
           mv ./res/32x32.png ./res/32x32.png.bak
           mv ./res/64x64.png ./res/64x64.png.bak
           mv ./res/128x128.png ./res/128x128.png.bak
@@ -306,7 +296,7 @@ jobs:
           magick ./res/128x128.png -resize 200% ./res/128x128@2x.png
 
       - name: ui.rs icon
-        if: ${{ inputs.iconlink != 'false' }}
+        if: ${{ hashFiles('repository/img/logo.png') != '' }}
         continue-on-error: true
         shell: bash
         run: |
@@ -366,7 +356,7 @@ jobs:
           sed -i '/administrator/d' res/manifest.xml
 
       - name: replace flutter icons
-        if: ${{ inputs.iconlink != 'false' }}
+        if: ${{ hashFiles('repository/img/logo.png') != '' }}
         continue-on-error: true
         run: |
           cd ./flutter
@@ -386,17 +376,16 @@ jobs:
           mv -Force .\usbmmidd_v2 ./rustdesk
 
       - name: icon stuff
-        if: ${{ inputs.iconlink != 'false' }}
+        if: ${{ hashFiles('repository/img/logo.png') != '' }}
         continue-on-error: true
         run: |
           mv ./rustdesk/data/flutter_assets/assets/icon.svg ./rustdesk/data/flutter_assets/assets/icon.svg.bak
           magick ./res/icon.png ./rustdesk/data/flutter_assets/assets/icon.svg
 
       - name: logo stuff
-        if: ${{ inputs.logolink != 'false' }}
+        if: ${{ hashFiles('repository/img/logo.png') != '' }}
         continue-on-error: true
-        run: |
-          Invoke-WebRequest -Uri ${{ fromJson(inputs.logolink).url }}/get_png?filename=${{ fromJson(inputs.logolink).file }}"&"uuid=${{ fromJson(inputs.logolink).uuid }} -OutFile ./rustdesk/data/flutter_assets/assets/logo.png
+        run: cp repository/img/logo.png ./res/logo.png
 
       - name: find Runner.res
         # Windows: find Runner.res (compiled from ./flutter/windows/runner/Runner.rc), copy to ./Runner.res
@@ -521,4 +510,3 @@ jobs:
           files: |
             ./SignOutput/${{ inputs.filename }}.exe
             ./SignOutput/${{ inputs.filename }}.msi
-

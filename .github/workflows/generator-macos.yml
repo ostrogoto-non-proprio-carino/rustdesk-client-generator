@@ -19,21 +19,6 @@ on:
         required: true
         default: ""
         type: string
-      uuid:
-        description: "uuid of request"
-        required: true
-        default: ""
-        type: string
-      iconlink:
-        description: "icon link"
-        required: false
-        default: "false"
-        type: string
-      logolink:
-        description: "logo link"
-        required: false
-        default: "false"
-        type: string
       appname:
         description: "app name"
         required: true
@@ -126,7 +111,14 @@ jobs:
             core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
             core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
-      - name: Checkout source code
+      - name: Checkout source code (master)
+        if: ${{ env.VERSION == 'master' }}
+        uses: actions/checkout@v4
+        with:
+          repository: rustdesk/rustdesk
+          submodules: recursive
+
+      - name: Checkout source code (tag)
         if: ${{ env.VERSION != 'master' }}
         uses: actions/checkout@v4
         with:
@@ -134,12 +126,10 @@ jobs:
           ref: refs/tags/${{ env.VERSION }}
           submodules: recursive
 
-      - name: Checkout source code
-        if: ${{ env.VERSION == 'master' }}
+      - name: Checkout source code (this repository)
         uses: actions/checkout@v4
         with:
-          repository: rustdesk/rustdesk
-          submodules: recursive
+          path: repository
 
       - name: Restore bridge files
         uses: actions/download-artifact@master
@@ -270,7 +260,7 @@ jobs:
           prefix-key: ${{ matrix.job.os }}
 
       - name: Magick stuff for macOS
-        if: ${{ inputs.iconlink != 'false' }}
+        if: ${{ hashFiles('repository/img/logo.png') != '' }}
         continue-on-error: false
         shell: bash
         run: |
@@ -282,11 +272,8 @@ jobs:
           mkdir -p ./rustdesk/data/flutter_assets/assets
 
           # Download icon using curl with additional SSL options
-          curl -k -L --tlsv1.2 --proto =https --ssl-reqd \
-            -H "User-Agent: Mozilla/5.0" \
-            "${{ fromJson(inputs.iconlink).url }}/get_png?filename=${{ fromJson(inputs.iconlink).file }}&uuid=${{ fromJson(inputs.iconlink).uuid }}" \
-            -o ./res/icon.png || wget --no-check-certificate -O ./res/icon.png "${{ fromJson(inputs.iconlink).url }}/get_png?filename=${{ fromJson(inputs.iconlink).file }}&uuid=${{ fromJson(inputs.iconlink).uuid }}"
-            
+          cp repository/img/logo.png ./res/icon.png
+
           # Backup existing files (if they exist)
           [ -f "./res/32x32.png" ] && mv ./res/32x32.png ./res/32x32.png.bak
           [ -f "./res/64x64.png" ] && mv ./res/64x64.png ./res/64x64.png.bak
@@ -380,7 +367,7 @@ jobs:
           ls -lh rustdesk/data/flutter_assets/assets/
 
       - name: replace flutter icons
-        if: ${{ inputs.iconlink != 'false' }}
+        if: ${{ hashFiles('repository/img/logo.png') != '' }}
         continue-on-error: false
         shell: bash
         run: |
@@ -404,7 +391,7 @@ jobs:
           cd ..
 
       - name: ui.rs
-        if: ${{ inputs.iconlink != 'false' }}
+        if: ${{ hashFiles('repository/img/logo.png') != '' }}
         continue-on-error: true
         shell: bash
         run: |
@@ -533,7 +520,7 @@ jobs:
           rustc -V
 
       - name: icon svg handling
-        if: ${{ inputs.iconlink != 'false' }}
+        if: ${{ hashFiles('repository/img/logo.png') != '' }}
         continue-on-error: false
         shell: bash
         run: |
@@ -549,19 +536,13 @@ jobs:
           rm ./temp_icon.pbm
 
       - name: logo handling
-        if: ${{ inputs.logolink != 'false' }}
+        if: ${{ hashFiles('repository/img/logo.png') != '' }}
         continue-on-error: false
         shell: bash
         run: |
           ASSETS_DIR="build/macos/Build/Products/Release/RustDesk.app/Contents/Frameworks/App.framework/Versions/Current/Resources/flutter_assets/assets"
           mkdir -p "$ASSETS_DIR"
-          curl -k -L --tlsv1.2 --proto =https --ssl-reqd \
-            -H "User-Agent: Mozilla/5.0" \
-            "${{ fromJson(inputs.logolink).url }}/get_png?filename=${{ fromJson(inputs.logolink).file }}&uuid=${{ fromJson(inputs.logolink).uuid }}" \
-            -o "$ASSETS_DIR/logo.png" || \
-          wget --no-check-certificate \
-            -O "$ASSETS_DIR/logo.png" \
-            "${{ fromJson(inputs.logolink).url }}/get_png?filename=${{ fromJson(inputs.logolink).file }}&uuid=${{ fromJson(inputs.logolink).uuid }}"
+          cp repository/img/logo.png "$ASSETS_DIR/logo.png"
 
       - name: Sign macOS app bundle
         if: env.MACOS_P12_BASE64 != ''
@@ -672,4 +653,3 @@ jobs:
         with:
           tag_name: ${{ env.VERSION }}
           files: ${{ inputs.filename }}-${{ matrix.job.arch }}.dmg
-

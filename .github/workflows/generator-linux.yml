@@ -19,21 +19,6 @@ on:
         required: true
         default: ""
         type: string
-      uuid:
-        description: "uuid of request"
-        required: true
-        default: ""
-        type: string
-      iconlink:
-        description: "icon link"
-        required: false
-        default: "false"
-        type: string
-      logolink:
-        description: "logo link"
-        required: false
-        default: "false"
-        type: string
       appname:
         description: "app name"
         required: true
@@ -136,12 +121,14 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y nasm qemu-user-static
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y imagemagick
+      - name: Checkout source code (master)
+        if: ${{ env.VERSION == 'master' }}
+        uses: actions/checkout@v4
+        with:
+          repository: rustdesk/rustdesk
+          submodules: recursive
 
-      - name: Checkout source code
+      - name: Checkout source code (tag)
         if: ${{ env.VERSION != 'master' }}
         uses: actions/checkout@v4
         with:
@@ -149,12 +136,21 @@ jobs:
           ref: refs/tags/${{ env.VERSION }}
           submodules: recursive
 
-      - name: Checkout source code
-        if: ${{ env.VERSION == 'master' }}
+      - name: Checkout source code (this repository)
         uses: actions/checkout@v4
         with:
-          repository: rustdesk/rustdesk
-          submodules: recursive
+          path: repository
+
+      - name: Restore bridge files
+        uses: actions/download-artifact@master
+        with:
+          name: bridge-artifact
+          path: ./
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
 
       - name: Set Swap Space
         if: ${{ matrix.job.arch == 'x86_64' }}
@@ -178,12 +174,6 @@ jobs:
         run: |
           # only build cdylib
           sed -i  "s/\[\"cdylib\", \"staticlib\", \"rlib\"\]/\[\"cdylib\"\]/g" Cargo.toml
-
-      - name: Restore bridge files
-        uses: actions/download-artifact@master
-        with:
-          name: bridge-artifact
-          path: ./
 
       - name: Setup vcpkg with Github Actions binary cache
         uses: lukka/run-vcpkg@v11
@@ -212,14 +202,14 @@ jobs:
         shell: bash
 
       - name: icon stuff
-        if: ${{ inputs.iconlink != 'false' }}
+        if: ${{ hashFiles('repository/img/logo.png') != '' }}
         continue-on-error: true
         shell: bash
         run: |
           mv ./res/icon.ico ./res/icon.ico.bak
           mv ./res/icon.png ./res/icon.png.bak
           mv ./res/tray-icon.ico ./res/tray-icon.ico.bak
-          wget -O ./res/icon.png ${{ fromJson(inputs.iconlink).url }}/get_png?filename=${{ fromJson(inputs.iconlink).file }}"&"uuid=${{ fromJson(inputs.iconlink).uuid }}
+          cp repository/img/logo.png ./res/icon.png
           mv ./res/32x32.png ./res/32x32.png.bak
           mv ./res/64x64.png ./res/64x64.png.bak
           mv ./res/128x128.png ./res/128x128.png.bak
@@ -478,7 +468,7 @@ jobs:
             mkdir -p flutter/tmpdeb/usr/lib/${{ inputs.filename }}
             cp ./custom.txt ./flutter/tmpdeb/usr/lib/${{ inputs.filename }}/custom.txt
             if [[ "${{ inputs.logolink }}" != "false" ]]; then
-              wget -O ./flutter/assets/logo.png ${{ fromJson(inputs.logolink).url }}/get_png?filename=${{ fromJson(inputs.logolink).file }}"&"uuid=${{ fromJson(inputs.logolink).uuid }}
+              cp repository/img/logo.png ./flutter/assets/logo.png
             fi
             if [[ "${{ inputs.iconlink }}" != "false" ]]; then
               mv ./flutter/assets/icon.svg ./flutter/assets/icon.svg.bak
@@ -536,4 +526,3 @@ jobs:
           files: |
             ./output/${{ inputs.filename }}.deb
             ./output/${{ inputs.filename }}.AppImage
-
