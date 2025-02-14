@@ -162,11 +162,6 @@ jobs:
         with:
           swap-size-gb: 12
 
-      - name: Free Space
-        run: |
-          df -h
-          free -m
-
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@v1
         with:
@@ -497,12 +492,12 @@ jobs:
             fi
 
             # Change files names in the output .deb
-            sed -ie "s|tmpdeb/usr/share/rustdesk/files/systemd/|tmpdeb/usr/share/rustdesk/files/systemd/${{ inputs.filename }}.service|g" build.py
+            sed -ie "s|\(cp .* \)tmpdeb/usr/share/rustdesk/files/systemd/|\1tmpdeb/usr/share/rustdesk/files/systemd/${{ inputs.filename }}.service|g" build.py
             sed -ie "s|cp -r \(.\+\)\* \([^ ]\+\)/rustdesk|mv \1rustdesk \1${{ inputs.filename }}; cp -r \1\* \2/${{ inputs.filename }}|g" build.py
             sed -ie "s|\(tmpdeb/[^ ]*\)rustdesk|\1${{ inputs.filename }}|g" build.py
             sed -ie "s|Package: rustdesk|Package: ${{ inputs.filename }}|g" build.py
             FILES=$(sed -ne "s~.*cp\s\(../\)\?\+\(.\+\.\(desktop\|service\)\)\s\+tmpdeb/.*~\2~p" build.py | sort | uniq)
-            FILES=$(echo -e "$FILES\n$(ls --color=never res/DEBIAN/*)")                                                 
+            FILES=$(echo -e "$FILES\n$(ls --color=never res/DEBIAN/*)")
             for FILE in $(echo $FILES | sed "s/\n/ /g"); do
               sed -ie "s|rustdesk|${{ inputs.filename }}|g" $FILE
             done
