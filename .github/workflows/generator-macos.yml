@@ -95,20 +95,20 @@ jobs:
       version: ${{ fromJson(inputs.extras).version }}
 
   build-for-macos-flutter:
-    name: Build macOS
-    runs-on: macos-latest
     needs: [generate-bridge]
+    name: Build macOS ${{ matrix.job.os }}
+    runs-on: ${{ matrix.job.os }}
     strategy:
       fail-fast: false
       matrix:
         job:
-          # - {
-          #   target: x86_64-apple-darwin,
-          #   os: macos-13, #macos-latest or macos-14 use M1 now, https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#:~:text=14%20GB-,macos%2Dlatest%20or%20macos%2D14,-The%20macos%2Dlatestlabel
-          #   extra-build-args: "",
-          #   arch: x86_64,
-          #   vcpkg-triplet: x64-osx,
-          # }
+          - {
+              target: x86_64-apple-darwin,
+              os: macos-13, #macos-latest or macos-14 use M1 now, https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#:~:text=14%20GB-,macos%2Dlatest%20or%20macos%2D14,-The%20macos%2Dlatestlabel
+              extra-build-args: "",
+              arch: x86_64,
+              vcpkg-triplet: x64-osx
+            }
           - {
               target: aarch64-apple-darwin,
               os: macos-latest,
@@ -660,8 +660,8 @@ jobs:
             
           if [ -n "$DMG_FILE" ]; then
             echo "Found DMG file: $DMG_FILE"
-            mv "$DMG_FILE" "${{ inputs.filename }}.dmg"
-            echo "Renamed to ${{ inputs.filename }}.dmg"
+            mv "$DMG_FILE" "${{ inputs.filename }}-${{ matrix.job.arch }}.dmg"
+            echo "Renamed to ${{ inputs.filename }}-${{ matrix.job.arch }}.dmg"
           else
             echo "No DMG file found matching the pattern"
             exit 1
@@ -671,5 +671,5 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.VERSION }}
-          files: $GITHUB_WORKSPACE/${{ inputs.filename }}.dmg
+          files: ${{ inputs.filename }}-${{ matrix.job.arch }}.dmg
 
