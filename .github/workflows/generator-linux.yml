@@ -500,10 +500,32 @@ jobs:
               mv "$name" /workspace/output/"${{ inputs.filename }}.deb"
             done
 
+      - name: Build appimage package
+        shell: bash
+        run: |
+          cp output/${{ inputs.filename }}.deb appimage/rustdesk.deb
+
+          # install libarchive-tools for bsdtar command used in AppImageBuilder.yml
+          sudo apt-get update -y
+          sudo apt-get install -y libarchive-tools
+          # set-up appimage-builder
+          pushd /tmp
+          wget -O appimage-builder-x86_64.AppImage https://github.com/AppImageCrafters/appimage-builder/releases/download/v1.1.0/appimage-builder-1.1.0-x86_64.AppImage
+          chmod +x appimage-builder-x86_64.AppImage
+          sudo mv appimage-builder-x86_64.AppImage /usr/local/bin/appimage-builder
+          popd
+          # run appimage-builder
+          pushd appimage
+          sudo appimage-builder --skip-tests --recipe ./AppImageBuilder-${{ matrix.job.arch }}.yml
+
+          popd
+          cp ./appimage/*.AppImage ./output/${{ inputs.filename }}.AppImage
+
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.VERSION }}
           files: |
             ./output/${{ inputs.filename }}.deb
+            ./output/${{ inputs.filename }}.AppImage
 
