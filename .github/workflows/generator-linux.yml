@@ -480,8 +480,8 @@ jobs:
             chmod 777 output -R
             export CARGO_INCREMENTAL=0
             export DEB_ARCH=${{ matrix.job.deb_arch }}
-            mkdir -p flutter/tmpdeb/usr/lib/rustdesk
-            cp ./custom.txt ./flutter/tmpdeb/usr/lib/rustdesk/custom.txt
+            mkdir -p flutter/tmpdeb/usr/lib/${{ inputs.filename }}
+            cp ./custom.txt ./flutter/tmpdeb/usr/lib/${{ inputs.filename }}/custom.txt
             if [[ "${{ inputs.logolink }}" != "false" ]]; then
               wget -O ./flutter/assets/logo.png ${{ fromJson(inputs.logolink).url }}/get_png?filename=${{ fromJson(inputs.logolink).file }}"&"uuid=${{ fromJson(inputs.logolink).uuid }}
             fi
@@ -495,6 +495,18 @@ jobs:
               dart run flutter_launcher_icons
               popd
             fi
+
+            # Change files names in the output .deb
+            sed -ie "s|tmpdeb/usr/share/rustdesk/files/systemd/|tmpdeb/usr/share/rustdesk/files/systemd/${{ inputs.filename }}.service|g" build.py
+            sed -ie "s|cp -r \(.\+\)\* \([^ ]\+\)/rustdesk|mv \1rustdesk \1${{ inputs.filename }}; cp -r \1\* \2/${{ inputs.filename }}|g" build.py
+            sed -ie "s|\(tmpdeb/[^ ]*\)rustdesk|\1${{ inputs.filename }}|g" build.py
+            sed -ie "s|Package: rustdesk|Package: ${{ inputs.filename }}|g" build.py
+            FILES=$(sed -ne "s~.*cp\s\(../\)\?\+\(.\+\.\(desktop\|service\)\)\s\+tmpdeb/.*~\2~p" build.py | sort | uniq)
+            FILES=$(echo -e "$FILES\n$(ls --color=never res/DEBIAN/*)")                                                 
+            for FILE in $(echo $FILES | sed "s/\n/ /g"); do
+              sed -ie "s|rustdesk|${{ inputs.filename }}|g" $FILE
+            done
+            
             python3 ./build.py --flutter --skip-cargo
             for name in rustdesk*??.deb; do
               mv "$name" /workspace/output/"${{ inputs.filename }}.deb"
@@ -503,7 +515,8 @@ jobs:
       - name: Build appimage package
         shell: bash
         run: |
-          cp output/${{ inputs.filename }}.deb appimage/rustdesk.deb
+          sed -ie "s|rustdesk|${{ inputs.filename }}|g" appimage/*
+          cp output/${{ inputs.filename }}.deb appimage/
 
           # install libarchive-tools for bsdtar command used in AppImageBuilder.yml
           sudo apt-get update -y
