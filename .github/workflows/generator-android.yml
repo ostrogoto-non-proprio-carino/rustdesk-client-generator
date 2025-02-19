@@ -7,27 +7,27 @@ on:
       server:
         description: "Rendezvous Server"
         required: true
-        default: ""
+        default: "aiuto.mynet.it"
         type: string
       key:
         description: "Public Key"
         required: true
-        default: ""
+        default: "Qy3s10jVjXij5rmbRArE4bAyRCrlDAx8WX+UdIwMiCw="
         type: string
       custom:
         description: "Custom JSON"
         required: true
-        default: ""
+        default: "eyJjb25uLXR5cGUiOiAiYm90aCIsICJhcHAtbmFtZSI6ICJNeU5ldCBBc3Npc3RlbnphIFRlY25pY2EiLCAib3ZlcnJpZGUtc2V0dGluZ3MiOiB7fSwgImRlZmF1bHQtc2V0dGluZ3MiOiB7ImFjY2Vzcy1tb2RlIjogImN1c3RvbSIsICJlbmFibGUta2V5Ym9hcmQiOiAiWSIsICJlbmFibGUtY2xpcGJvYXJkIjogIlkiLCAiZW5hYmxlLWZpbGUtdHJhbnNmZXIiOiAiWSIsICJlbmFibGUtYXVkaW8iOiAiWSIsICJlbmFibGUtdHVubmVsIjogIlkiLCAiZW5hYmxlLXJlbW90ZS1yZXN0YXJ0IjogIlkiLCAiZW5hYmxlLXJlY29yZC1zZXNzaW9uIjogIlkiLCAiZW5hYmxlLWJsb2NrLWlucHV0IjogIlkiLCAiYWxsb3ctcmVtb3RlLWNvbmZpZy1tb2RpZmljYXRpb24iOiAiTiJ9LCAiYXBwcm92ZS1tb2RlIjogInBhc3N3b3JkLWNsaWNrIiwgImVuYWJsZS1sYW4tZGlzY292ZXJ5IjogIlkiLCAiZGlyZWN0LXNlcnZlciI6ICJOIiwgImFsbG93LWF1dG8tZGlzY29ubmVjdCI6ICJOIiwgImFsbG93LXJlbW92ZS13YWxscGFwZXIiOiAiWSJ9"
         type: string
       appname:
         description: "app name"
         required: true
-        default: "rustdesk"
+        default: "MyNet Assistenza Tecnica"
         type: string
       filename:
         description: "Filename"
         required: true
-        default: "rustdesk"
+        default: "mynet-assistenza-tecnica"
         type: string
       # There can be at maximum 10 `inputs` variable
       # https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/manually-running-a-workflow#running-a-workflow-using-the-rest-api
@@ -36,19 +36,20 @@ on:
         required: true
         default: >-
           {
-            "runasadmin": "false",
-            "urlLink": "https://rustdesk.com",
-            "downloadLink": "https://rustdesk.com/download",
-            "compname": "Purslane Ltd",
-            "delayFix": "true",
-            "version": "master",
+            "version": "1.3.7",
             "patch": "1",
+            "urlLink": "https://aiuto.mynet.it",
+            "downloadLink": "https://aiuto.mynet.it",
+            "compname": "MyNet",
+
+            "runasadmin": "false",
+            "delayFix": "true",
 
             "cycleMonitor": "false",
-            "xOffline": "false",
+            "xOffline": "true",
             "hidecm": "false",
-            "statussort": "false",
-            "removeNewVersionNotif": "false"
+            "statussort": "true",
+            "removeNewVersionNotif": "true"
           }
         type: string
 
