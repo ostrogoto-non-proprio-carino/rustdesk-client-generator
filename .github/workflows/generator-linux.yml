@@ -141,6 +141,31 @@ jobs:
         with:
           path: repository
 
+      - name: fix connection delay
+        if: ${{ fromJson(inputs.extras).delayFix == 'true' }}
+        shell: bash
+        run: sed -i -e '/if !key.is_empty() && !token.is_empty() {/,/}/d' ./src/client.rs
+      - name: Remove installation tip for Windows
+        run: git apply ./repository/.github/patches/windowsRemoveInstallationTip.diff
+      - name: Remove setup_server_tip
+        run: git apply ./repository/.github/patches/removeSetupServerTip.diff
+
+      - name: add cycle monitors to toolbar
+        if: fromJson(inputs.extras).cycleMonitor == 'true'
+        run: git apply ./repository/.github/patches/cycle_monitor.diff
+      - name: use X for offline display instead of orange circle
+        if: fromJson(inputs.extras).xOffline == 'true'
+        run: git apply ./repository/.github/patches/xoffline.diff
+      - name: hide-cm
+        if: fromJson(inputs.extras).hidecm == 'true'
+        run: git apply ./repository/.github/patches/hidecm.diff
+      - name: statussort
+        if: fromJson(inputs.extras).statussort == 'true'
+        run: git apply ./repository/.github/patches/statussort.diff
+      - name: removeNewVersionNotif
+        if: fromJson(inputs.extras).removeNewVersionNotif == 'true'
+        run: git apply ./repository/.github/patches/removeNewVersionNotif.diff
+
       - name: Restore bridge files
         uses: actions/download-artifact@master
         with:
@@ -275,48 +300,6 @@ jobs:
           sed -i -e 's|https://rustdesk.com/download|${{ fromJson(inputs.extras).downloadLink }}|' ./flutter/lib/desktop/pages/desktop_home_page.dart
           sed -i -e 's|https://rustdesk.com/download|${{ fromJson(inputs.extras).downloadLink }}|' ./flutter/lib/mobile/pages/connection_page.dart
           sed -i -e 's|https://rustdesk.com/download|${{ fromJson(inputs.extras).downloadLink }}|' ./src/ui/index.tis
-
-      - name: fix connection delay
-        continue-on-error: true
-        if: ${{ fromJson(inputs.extras).delayFix == 'true' }}
-        shell: bash
-        run: |
-          sed -i -e '/if !key.is_empty() && !token.is_empty() {/,/}/d' ./src/client.rs
-
-      - name: add cycle monitors to toolbar
-        continue-on-error: true
-        if: fromJson(inputs.extras).cycleMonitor == 'true'
-        run: |
-          wget https://raw.githubusercontent.com/bryangerlach/rdgen/refs/heads/master/.github/patches/cycle_monitor.diff
-          git apply cycle_monitor.diff
-
-      - name: use X for offline display instead of orange circle
-        continue-on-error: true
-        if: fromJson(inputs.extras).xOffline == 'true'
-        run: |
-          wget https://raw.githubusercontent.com/bryangerlach/rdgen/refs/heads/master/.github/patches/xoffline.diff
-          git apply xoffline.diff
-
-      - name: hide-cm
-        continue-on-error: true
-        if: fromJson(inputs.extras).hidecm == 'true'
-        run: |
-          wget https://raw.githubusercontent.com/bryangerlach/rdgen/refs/heads/master/.github/patches/hidecm.diff
-          git apply hidecm.diff
-
-      - name: statussort
-        continue-on-error: true
-        if: fromJson(inputs.extras).statussort == 'true'
-        run: |
-          wget https://raw.githubusercontent.com/bryangerlach/rdgen/refs/heads/master/.github/patches/statussort.diff
-          git apply statussort.diff
-
-      - name: removeNewVersionNotif
-        continue-on-error: true
-        if: fromJson(inputs.extras).removeNewVersionNotif == 'true'
-        run: |
-          wget https://raw.githubusercontent.com/bryangerlach/rdgen/refs/heads/master/.github/patches/removeNewVersionNotif.diff
-          git apply removeNewVersionNotif.diff
 
       - name: Restore bridge files
         uses: actions/download-artifact@master
@@ -526,3 +509,4 @@ jobs:
           files: |
             ./output/${{ inputs.filename }}.deb
             ./output/${{ inputs.filename }}.AppImage
+
