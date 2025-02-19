@@ -469,6 +469,7 @@ jobs:
             sed -ie "s|cp -r \(.\+\)\* \([^ ]\+\)/rustdesk|mv \1rustdesk \1${{ inputs.filename }}; cp -r \1\* \2/${{ inputs.filename }}|g" build.py
             sed -ie "s|\(tmpdeb/[^ ]*\)rustdesk|\1${{ inputs.filename }}|g" build.py
             sed -ie "s|Package: rustdesk|Package: ${{ inputs.filename }}|g" build.py
+            sed -ie "s|RustDesk|${{ inputs.appname }}|g" res/rustdesk.desktop
             FILES=$(sed -ne "s~.*cp\s\(../\)\?\+\(.\+\.\(desktop\|service\)\)\s\+tmpdeb/.*~\2~p" build.py | sort | uniq)
             FILES=$(echo -e "$FILES\n$(ls --color=never res/DEBIAN/*)")
             for FILE in $(echo $FILES | sed "s/\n/ /g"); do
