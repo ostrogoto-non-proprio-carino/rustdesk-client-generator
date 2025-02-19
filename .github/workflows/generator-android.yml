@@ -39,6 +39,7 @@ on:
             "runasadmin": "false",
             "urlLink": "https://rustdesk.com",
             "downloadLink": "https://rustdesk.com/download",
+            "compname": "Purslane Ltd",
             "delayFix": "true",
             "version": "master",
 
