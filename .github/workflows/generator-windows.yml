@@ -42,6 +42,7 @@ on:
             "compname": "Purslane Ltd",
             "delayFix": "true",
             "version": "master",
+            "patch": "1",
 
             "cycleMonitor": "false",
             "xOffline": "false",
@@ -442,14 +443,14 @@ jobs:
 
       - name: rename executables
         run: |
-          mv ./SignOutput/rustdesk.exe "./SignOutput/${{ inputs.filename }}.exe"
-          mv ./SignOutput/rustdesk.msi "./SignOutput/${{ inputs.filename }}.msi"
+          mv ./SignOutput/rustdesk.exe "./SignOutput/${{ inputs.filename }}-${{ matrix.job.arch }}-${{ env.VERSION }}-${{ fromJson(inputs.extras).patch }}.exe"
+          mv ./SignOutput/rustdesk.msi "./SignOutput/${{ inputs.filename }}-${{ matrix.job.arch }}-${{ env.VERSION }}-${{ fromJson(inputs.extras).patch }}.msi"
 
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ env.VERSION }}
+          tag_name: ${{ env.VERSION }}-${{ fromJson(inputs.extras).patch }}
           files: |
-            ./SignOutput/${{ inputs.filename }}.exe
-            ./SignOutput/${{ inputs.filename }}.msi
+            ./SignOutput/${{ inputs.filename }}-${{ matrix.job.arch }}-${{ env.VERSION }}-${{ fromJson(inputs.extras).patch }}.exe
+            ./SignOutput/${{ inputs.filename }}-${{ matrix.job.arch }}-${{ env.VERSION }}-${{ fromJson(inputs.extras).patch }}.msi
 

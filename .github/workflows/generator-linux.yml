@@ -42,6 +42,7 @@ on:
             "compname": "Purslane Ltd",
             "delayFix": "true",
             "version": "master",
+            "patch": "1",
 
             "cycleMonitor": "false",
             "xOffline": "false",
@@ -488,14 +489,14 @@ jobs:
             
             python3 ./build.py --flutter --skip-cargo
             for name in rustdesk*??.deb; do
-              mv "$name" /workspace/output/"${{ inputs.filename }}.deb"
+              mv "$name" /workspace/output/"${{ inputs.filename }}-${{ matrix.job.arch }}-${{ env.VERSION }}-${{ fromJson(inputs.extras).patch }}.deb"
             done
 
       - name: Build appimage package
         shell: bash
         run: |
           sed -ie "s|rustdesk|${{ inputs.filename }}|g" appimage/*
-          cp output/${{ inputs.filename }}.deb appimage/
+          cp output/${{ inputs.filename }}-${{ matrix.job.arch }}-${{ env.VERSION }}-${{ fromJson(inputs.extras).patch }}.deb appimage/${{ inputs.filename }}.deb
 
           # install libarchive-tools for bsdtar command used in AppImageBuilder.yml
           sudo apt-get update -y
@@ -511,13 +512,13 @@ jobs:
           sudo appimage-builder --skip-tests --recipe ./AppImageBuilder-${{ matrix.job.arch }}.yml
 
           popd
-          cp ./appimage/*.AppImage ./output/${{ inputs.filename }}.AppImage
+          cp ./appimage/*.AppImage ./output/${{ inputs.filename }}-${{ matrix.job.arch }}-${{ env.VERSION }}-${{ fromJson(inputs.extras).patch }}.AppImage
 
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ env.VERSION }}
+          tag_name: ${{ env.VERSION }}-${{ fromJson(inputs.extras).patch }}
           files: |
-            ./output/${{ inputs.filename }}.deb
-            ./output/${{ inputs.filename }}.AppImage
+            ./output/${{ inputs.filename }}-${{ matrix.job.arch }}-${{ env.VERSION }}-${{ fromJson(inputs.extras).patch }}.deb
+            ./output/${{ inputs.filename }}-${{ matrix.job.arch }}-${{ env.VERSION }}-${{ fromJson(inputs.extras).patch }}.AppImage
 
