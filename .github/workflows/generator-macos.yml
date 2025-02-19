@@ -169,7 +169,6 @@ jobs:
           echo "$(brew --prefix imagemagick)/bin" >> $GITHUB_PATH
 
       - name: Update macOS Info.plist and settings
-        continue-on-error: false
         shell: bash
         run: |
           # MACSTUFF Backup the original files
@@ -286,7 +285,6 @@ jobs:
 
       - name: Magick stuff for macOS
         if: ${{ hashFiles('repository/img/logo.png') != '' }}
-        continue-on-error: false
         shell: bash
         run: |
           # Create all necessary directories first
@@ -393,7 +391,6 @@ jobs:
 
       - name: replace flutter icons
         if: ${{ hashFiles('repository/img/logo.png') != '' }}
-        continue-on-error: false
         shell: bash
         run: |
           cd ./flutter
@@ -504,7 +501,6 @@ jobs:
 
       - name: icon svg handling
         if: ${{ hashFiles('repository/img/logo.png') != '' }}
-        continue-on-error: false
         shell: bash
         run: |
           ASSETS_DIR="build/macos/Build/Products/Release/RustDesk.app/Contents/Frameworks/App.framework/Versions/Current/Resources/flutter_assets/assets"
@@ -520,7 +516,6 @@ jobs:
 
       - name: logo handling
         if: ${{ hashFiles('repository/img/logo.png') != '' }}
-        continue-on-error: false
         shell: bash
         run: |
           ASSETS_DIR="build/macos/Build/Products/Release/RustDesk.app/Contents/Frameworks/App.framework/Versions/Current/Resources/flutter_assets/assets"
