@@ -36,7 +36,7 @@ on:
         required: true
         default: >-
           {
-            "version": "1.3.7",
+            "version": "1.3.8",
             "patch": "1",
             "urlLink": "https://aiuto.mynet.it",
             "downloadLink": "https://aiuto.mynet.it",
@@ -48,7 +48,6 @@ on:
             "cycleMonitor": "false",
             "xOffline": "true",
             "hidecm": "false",
-            "statussort": "true",
             "removeNewVersionNotif": "true"
           }
         type: string
@@ -142,6 +141,8 @@ jobs:
         run: git apply ./repository/.github/patches/windowsRemoveInstallationTip.diff
       - name: Remove setup_server_tip
         run: git apply ./repository/.github/patches/removeSetupServerTip.diff
+      - name: Remove setup_server_tip
+        run: git apply ./repository/.github/patches/allowCustom.diff
 
       - name: add cycle monitors to toolbar
         if: fromJson(inputs.extras).cycleMonitor == 'true'
@@ -152,9 +153,6 @@ jobs:
       - name: hide-cm
         if: fromJson(inputs.extras).hidecm == 'true'
         run: git apply ./repository/.github/patches/hidecm.diff
-      - name: statussort
-        if: fromJson(inputs.extras).statussort == 'true'
-        run: git apply ./repository/.github/patches/statussort.diff
       - name: removeNewVersionNotif
         if: fromJson(inputs.extras).removeNewVersionNotif == 'true'
         run: git apply ./repository/.github/patches/removeNewVersionNotif.diff
@@ -245,10 +243,6 @@ jobs:
           sed -i -e 's|RustDesk|${{ inputs.appname }}|' ./libs/hbb_common/src/config.rs
           sed -i -e 's|rs-ny.rustdesk.com|${{ inputs.server }}|' ./libs/hbb_common/src/config.rs
           sed -i -e 's|OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=|${{ inputs.key }}|' ./libs/hbb_common/src/config.rs
-          sed -i -e 's|For faster connection, please set up your own server||' ./src/lang/en.rs
-
-          sed -i '' -e '/const KEY:/,/};/d' ./src/common.rs
-          sed -i '' -e '/let Ok(data) = sign::verify(&data, &pk)/,/};/d' ./src/common.rs
             
           # Update pubspec.yaml with proper YAML formatting
           cp ./flutter/pubspec.yaml ./flutter/pubspec.yaml.bak

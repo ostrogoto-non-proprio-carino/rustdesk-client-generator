@@ -1,14 +1,13 @@
-diff --git a/src/ui/index.tis b/src/ui/index.tis
-index 1dff3cecb..7684d3efa 100644
---- a/src/ui/index.tis
-+++ b/src/ui/index.tis
-@@ -45,8 +45,7 @@ class ConnectStatus: Reactor.Component {
-         } else if (connect_status == 0) {
-             return translate('connecting_status');
-         }
--        if (!handler.using_public_server()) return translate('Ready');
--        return <span>{translate("Ready")}, <span .link #setup-server>{translate("setup_server_tip")}</span></span>;
-+        return translate('Ready');
-     }
+diff --git a/flutter/lib/desktop/pages/connection_page.dart b/flutter/lib/desktop/pages/connection_page.dart
+index d9dc3eec4..76f386b76 100644
+--- a/flutter/lib/desktop/pages/connection_page.dart
++++ b/flutter/lib/desktop/pages/connection_page.dart
+@@ -131,7 +131,7 @@ class _OnlineStatusWidgetState extends State<OnlineStatusWidget> {
+             if (!isIncomingOnly) startServiceWidget(),
+             // ready && public
+             // No need to show the guide if is custom client.
+-            if (!isIncomingOnly) setupServerWidget(),
++            //if (!isIncomingOnly) setupServerWidget(),
+           ],
+         );
  
-     event click $(#start-service) () {
