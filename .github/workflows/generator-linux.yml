@@ -286,7 +286,7 @@ jobs:
           sed -i -e 's|OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=|${{ inputs.key }}|' ./libs/hbb_common/src/config.rs
           echo -n "${{ inputs.custom }}" | cat > ./custom.txt
           # sed -i '/intl:/a \ \ archive: ^3.6.1' ./flutter/pubspec.yaml
-
+          
       - name: change url to custom
         if: fromJson(inputs.extras).urlLink != 'https://rustdesk.com'
         continue-on-error: true
@@ -397,6 +397,12 @@ jobs:
               export JOBS=""
             fi
             echo $JOBS
+
+            # Make the right unit stop when the services is stopped by tray
+            sed -ie "s|\(systemctl\s\+\S\+\s\){app_name}|\1${{ inputs.filename }}|g" src/platform/linux.rs
+            sed -ie 's|\({home}/{p}/{app_name0}2\?.toml\)|\\"\1\\"|g' src/platform/linux.rs
+            sed -ie 's|\(/root/{p}/\)|\\"\1\\"|g' src/platform/linux.rs
+
             cargo build --lib $JOBS --features hwcodec,flutter,unix-file-copy-paste --release
             rm -rf target/release/deps target/release/build
             rm -rf ~/.cargo
@@ -516,3 +522,4 @@ jobs:
           files: |
             ./output/${{ inputs.filename }}-${{ matrix.job.arch }}-${{ env.VERSION }}-${{ fromJson(inputs.extras).patch }}.deb
             ./output/${{ inputs.filename }}-${{ matrix.job.arch }}-${{ env.VERSION }}-${{ fromJson(inputs.extras).patch }}.AppImage
+
