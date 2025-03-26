@@ -17,7 +17,7 @@ on:
       custom:
         description: "Custom JSON"
         required: true
-        default: "eyJjb25uLXR5cGUiOiAiYm90aCIsICJhcHAtbmFtZSI6ICJNeU5ldCBBc3Npc3RlbnphIFRlY25pY2EiLCAib3ZlcnJpZGUtc2V0dGluZ3MiOiB7fSwgImRlZmF1bHQtc2V0dGluZ3MiOiB7ImFjY2Vzcy1tb2RlIjogImN1c3RvbSIsICJlbmFibGUta2V5Ym9hcmQiOiAiWSIsICJlbmFibGUtY2xpcGJvYXJkIjogIlkiLCAiZW5hYmxlLWZpbGUtdHJhbnNmZXIiOiAiWSIsICJlbmFibGUtYXVkaW8iOiAiWSIsICJlbmFibGUtdHVubmVsIjogIlkiLCAiZW5hYmxlLXJlbW90ZS1yZXN0YXJ0IjogIlkiLCAiZW5hYmxlLXJlY29yZC1zZXNzaW9uIjogIlkiLCAiZW5hYmxlLWJsb2NrLWlucHV0IjogIlkiLCAiYWxsb3ctcmVtb3RlLWNvbmZpZy1tb2RpZmljYXRpb24iOiAiTiJ9LCAiYXBwcm92ZS1tb2RlIjogInBhc3N3b3JkLWNsaWNrIiwgImVuYWJsZS1sYW4tZGlzY292ZXJ5IjogIlkiLCAiZGlyZWN0LXNlcnZlciI6ICJOIiwgImFsbG93LWF1dG8tZGlzY29ubmVjdCI6ICJOIiwgImFsbG93LXJlbW92ZS13YWxscGFwZXIiOiAiWSJ9"
+        default: "eyJhbGxvdy1hdXRvLWRpc2Nvbm5lY3QiOiJOIiwiYWxsb3ctcmVtb3ZlLXdhbGxwYXBlciI6IlkiLCJhcHAtbmFtZSI6Ik15TmV0IEFzc2lzdGVuemEgVGVjbmljYSIsImFwcHJvdmUtbW9kZSI6InBhc3N3b3JkLWNsaWNrIiwiY29ubi10eXBlIjoiYm90aCIsImRlZmF1bHQtc2V0dGluZ3MiOnsiYWNjZXNzLW1vZGUiOiJjdXN0b20iLCJhbGxvdy1yZW1vdGUtY29uZmlnLW1vZGlmaWNhdGlvbiI6Ik4iLCJlbmFibGUtYXVkaW8iOiJZIiwiZW5hYmxlLWJsb2NrLWlucHV0IjoiWSIsImVuYWJsZS1jbGlwYm9hcmQiOiJZIiwiZW5hYmxlLWZpbGUtdHJhbnNmZXIiOiJZIiwiZW5hYmxlLWtleWJvYXJkIjoiWSIsImVuYWJsZS1yZWNvcmQtc2Vzc2lvbiI6IlkiLCJlbmFibGUtcmVtb3RlLXJlc3RhcnQiOiJZIiwiZW5hYmxlLXR1bm5lbCI6IlkiLCJzaG93LXJlbW90ZS1jdXJzb3IiOiJZIn0sImRpcmVjdC1zZXJ2ZXIiOiJOIiwiZW5hYmxlLWxhbi1kaXNjb3ZlcnkiOiJZIiwib3ZlcnJpZGUtc2V0dGluZ3MiOnt9fQo="
         type: string
       appname:
         description: "app name"
@@ -37,7 +37,7 @@ on:
         default: >-
           {
             "version": "1.3.8",
-            "patch": "1",
+            "patch": "2",
             "urlLink": "https://aiuto.mynet.it",
             "downloadLink": "https://aiuto.mynet.it",
             "compname": "MyNet",
