@@ -36,8 +36,8 @@ on:
         required: true
         default: >-
           {
-            "version": "1.3.8",
-            "patch": "3",
+            "version": "1.3.9",
+            "patch": "1",
             "urlLink": "https://aiuto.mynet.it",
             "downloadLink": "https://aiuto.mynet.it",
             "compname": "MyNet",
@@ -99,13 +99,13 @@ jobs:
               vcpkg-triplet: x64-linux,
             }
           - {
-            arch: aarch64,
-            target: aarch64-unknown-linux-gnu,
-            distro: ubuntu18.04,
-            on: ubuntu-22.04-arm,
-            deb_arch: arm64,
-            vcpkg-triplet: arm64-linux,
-          }
+              arch: aarch64,
+              target: aarch64-unknown-linux-gnu,
+              distro: ubuntu18.04,
+              on: ubuntu-22.04-arm,
+              deb_arch: arm64,
+              vcpkg-triplet: arm64-linux,
+            }
     steps:
       - name: Export GitHub Actions cache environment variables
         uses: actions/github-script@v6
@@ -124,7 +124,7 @@ jobs:
           if [[ "${{ matrix.job.arch }}" == "x86_64" ]]; then
             sudo apt-get install -y qemu-user-static
           fi
-      
+
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -173,7 +173,7 @@ jobs:
       - name: removeNewVersionNotif
         if: fromJson(inputs.extras).removeNewVersionNotif == 'true'
         shell: bash
-        run: | 
+        run: |
           sed -i -e 's|updateUrl.isNotEmpty|false|' ./flutter/lib/desktop/pages/desktop_home_page.dart
           sed -i '/let (request, url) =/,/Ok(())/{/Ok(())/!d}' ./src/common.rs
 
@@ -287,7 +287,7 @@ jobs:
           sed -i -e 's|Purslane Ltd|${{ fromJson(inputs.extras).compname }}|' ./flutter/lib/desktop/pages/desktop_setting_page.dart
           sed -i -e 's|Purslane Ltd|${{ fromJson(inputs.extras).compname }}|' ./Cargo.toml
           sed -i -e 's|Purslane Ltd|${{ fromJson(inputs.extras).compname }}|' ./libs/portable/Cargo.toml
-          
+
       - name: allow custom.txt
         continue-on-error: true
         shell: bash
@@ -501,13 +501,14 @@ jobs:
             for FILE in $(echo $FILES | sed "s/\n/ /g"); do
               sed -ie "s|rustdesk|${{ inputs.filename }}|g" $FILE
             done
-            
+
             python3 ./build.py --flutter --skip-cargo
             for name in rustdesk*??.deb; do
               mv "$name" /workspace/output/"${{ inputs.filename }}-${{ matrix.job.arch }}-${{ env.VERSION }}-${{ fromJson(inputs.extras).patch }}.deb"
             done
 
       - name: Build appimage package
+        if: ${{ matrix.job.arch == 'x86_64' }}
         shell: bash
         run: |
           sed -ie "s|rustdesk|${{ inputs.filename }}|g" appimage/*
@@ -515,7 +516,7 @@ jobs:
 
           # install libarchive-tools for bsdtar command used in AppImageBuilder.yml
           sudo apt-get update -y
-          sudo apt-get install -y libarchive-tools
+          sudo apt-get install -y libarchive-tools libfuse2
           # set-up appimage-builder
           pushd /tmp
           wget -O appimage-builder-x86_64.AppImage https://github.com/AppImageCrafters/appimage-builder/releases/download/v1.1.0/appimage-builder-1.1.0-x86_64.AppImage
@@ -533,6 +534,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.VERSION }}-${{ fromJson(inputs.extras).patch }}
+          prerelease: true
           files: |
             ./output/${{ inputs.filename }}-${{ matrix.job.arch }}-${{ env.VERSION }}-${{ fromJson(inputs.extras).patch }}.deb
             ./output/${{ inputs.filename }}-${{ matrix.job.arch }}-${{ env.VERSION }}-${{ fromJson(inputs.extras).patch }}.AppImage

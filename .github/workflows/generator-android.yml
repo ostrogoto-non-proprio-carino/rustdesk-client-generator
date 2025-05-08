@@ -36,8 +36,8 @@ on:
         required: true
         default: >-
           {
-            "version": "1.3.8",
-            "patch": "3",
+            "version": "1.3.9",
+            "patch": "1",
             "urlLink": "https://aiuto.mynet.it",
             "downloadLink": "https://aiuto.mynet.it",
             "compname": "MyNet",
@@ -171,7 +171,7 @@ jobs:
       - name: removeNewVersionNotif
         if: fromJson(inputs.extras).removeNewVersionNotif == 'true'
         shell: bash
-        run: | 
+        run: |
           sed -i -e 's|updateUrl.isNotEmpty|false|' ./flutter/lib/desktop/pages/desktop_home_page.dart
           sed -i '/let (request, url) =/,/Ok(())/{/Ok(())/!d}' ./src/common.rs
 
@@ -318,7 +318,7 @@ jobs:
           sed -i -e 's|OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=|${{ inputs.key }}|' ./libs/hbb_common/src/config.rs
           # ./flutter/pubspec.yaml
           #sed -i '/intl:/a \ \ archive: ^3.6.1' ./flutter/pubspec.yaml
-          
+
       - name: change appname to custom
         if: inputs.appname != 'rustdesk'
         continue-on-error: true
@@ -515,4 +515,5 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.VERSION }}-${{ fromJson(inputs.extras).patch }}
+          prerelease: true
           files: ./signed-apk/${{ inputs.filename }}-${{ matrix.job.arch }}-${{ env.VERSION }}-${{ fromJson(inputs.extras).patch }}.apk

@@ -36,8 +36,8 @@ on:
         required: true
         default: >-
           {
-            "version": "1.3.8",
-            "patch": "3",
+            "version": "1.3.9",
+            "patch": "1",
             "urlLink": "https://aiuto.mynet.it",
             "downloadLink": "https://aiuto.mynet.it",
             "compname": "MyNet",
@@ -190,7 +190,7 @@ jobs:
 
           sed -i -e 's|Purslane Ltd.|${{ inputs.appname }}|' ./Cargo.toml
           sed -i -e 's|Purslane Ltd|${{ inputs.appname }}|' ./libs/portable/Cargo.toml
-          
+
           # Update Xcode project settings
           sed -i '' -e 's/PRODUCT_NAME = "RustDesk"/PRODUCT_NAME = "${{ inputs.appname }}"/' ./flutter/macos/Runner.xcodeproj/project.pbxproj
           sed -i '' -e 's/PRODUCT_BUNDLE_IDENTIFIER = ".*"/PRODUCT_BUNDLE_IDENTIFIER = "com.${{ inputs.appname }}.app"/' ./flutter/macos/Runner.xcodeproj/project.pbxproj
@@ -209,7 +209,7 @@ jobs:
           cp ./src/lang/nl.rs ./src/lang/nl.rs.bak
           find ./src/lang -name "*.rs" -exec sed -i '' -e 's|RustDesk|${{ inputs.appname }}|' {} \;
           sed -i '' -e 's|RustDesk|${{ inputs.appname }}|' ./src/lang/nl.rs
-           
+
           sed -i '' -e 's|Homepage: https://rustdesk.com|Homepage: ${{ fromJson(inputs.extras).urlLink }}|' ./build.py
           sed -i '' -e "s|launchUrl(Uri.parse('https://rustdesk.com'));|launchUrl(Uri.parse('${{ fromJson(inputs.extras).urlLink }}'));|" ./flutter/lib/common.dart
           sed -i '' -e "s|launchUrlString('https://rustdesk.com');|launchUrlString('${{ fromJson(inputs.extras).urlLink }}');|" ./flutter/lib/desktop/pages/desktop_setting_page.dart
@@ -230,7 +230,7 @@ jobs:
           # Update slogan
           #sed -i '' '/<key>NSHumanReadableCopyright<\/key>/{n;s/<string>.*<\/string>/<string>Copyright 2025 ${{ inputs.appname }}. All rights reserved.<\/string>/;}' ./flutter/macos/Runner/Info.plist
 
-          # Update slogan - About in en.rs 
+          # Update slogan - About in en.rs
           sed -i '' -e 's/("Slogan_tip", "Made with heart in this chaotic world!")/("Slogan_tip", "Powered by ${{ inputs.appname }}")/' ./src/lang/en.rs
           sed -i '' -e 's/("About RustDesk", "")/("About RustDesk", "About ${{ inputs.appname }}")/' ./src/lang/en.rs
 
@@ -243,7 +243,7 @@ jobs:
           sed -i -e 's|RustDesk|${{ inputs.appname }}|' ./libs/hbb_common/src/config.rs
           sed -i -e 's|rs-ny.rustdesk.com|${{ inputs.server }}|' ./libs/hbb_common/src/config.rs
           sed -i -e 's|OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=|${{ inputs.key }}|' ./libs/hbb_common/src/config.rs
-            
+
           # Update pubspec.yaml with proper YAML formatting
           cp ./flutter/pubspec.yaml ./flutter/pubspec.yaml.bak
           echo "  archive: ^3.6.1" > ./flutter/temp_dependency.txt
@@ -272,7 +272,7 @@ jobs:
         run: |
           cd $(dirname $(dirname $(which flutter)))
           [[ "3.24.5" == ${{env.FLUTTER_VERSION}} ]] && git apply ${{ github.workspace }}/.github/patches/flutter_3.24.4_dropdown_menu_enableFilter.diff
-      
+
       - name: Workaround for flutter issue
         shell: bash
         run: |
@@ -314,7 +314,7 @@ jobs:
           [ -f "./flutter/assets/icon.png" ] && mv ./flutter/assets/icon.png ./flutter/assets/icon.png.bak
           [ -f "./flutter/assets/icon.svg" ] && mv ./flutter/assets/icon.svg ./flutter/assets/icon.svg.bak
           [ -f "./rustdesk/data/flutter_assets/assets/icon.svg" ] && mv ./rustdesk/data/flutter_assets/assets/icon.svg ./rustdesk/data/flutter_assets/assets/icon.svg.bak
-            
+
           # Create standard app icons
           magick ./res/icon.png -resize 32x32 ./res/32x32.png
           magick ./res/icon.png -resize 64x64 ./res/64x64.png
@@ -441,6 +441,7 @@ jobs:
 
       - name: Install vcpkg dependencies
         run: |
+          $VCPKG_ROOT/vcpkg x-update-baseline
           if ! $VCPKG_ROOT/vcpkg \
             install \
             --x-install-root="$VCPKG_ROOT/installed"; then
@@ -569,12 +570,12 @@ jobs:
                   --code-signature-flags runtime "${{ inputs.appname }}.app/Contents/MacOS/$ACTUAL_EXECUTABLE"
               fi
             fi
-            
+
             echo "Signing frameworks..."
             find "${{ inputs.appname }}.app/Contents/Frameworks" -type f -not -name ".*" -exec \
               rcodesign sign --p12-file certificate.p12 --p12-password "${{ secrets.MACOS_P12_PASSWORD }}" \
               --code-signature-flags runtime {} \;
-            
+
             echo "Signing main bundle..."
             rcodesign sign --p12-file certificate.p12 --p12-password "${{ secrets.MACOS_P12_PASSWORD }}" \
               --code-signature-flags runtime "${{ inputs.appname }}.app"
@@ -619,10 +620,10 @@ jobs:
           cd $GITHUB_WORKSPACE
           echo "Directory contents:"
           ls -la
-            
+
           # Find the DMG file dynamically
           DMG_FILE=$(find . -name "${{ inputs.appname }}-${{ matrix.job.arch }}.dmg")
-            
+
           if [ -n "$DMG_FILE" ]; then
             echo "Found DMG file: $DMG_FILE"
             mv "$DMG_FILE" "${{ inputs.filename }}-${{ matrix.job.arch }}-${{ env.VERSION }}-${{ fromJson(inputs.extras).patch }}.dmg"
@@ -636,4 +637,5 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.VERSION }}-${{ fromJson(inputs.extras).patch }}
+          prerelease: true
           files: ${{ inputs.filename }}-${{ matrix.job.arch }}-${{ env.VERSION }}-${{ fromJson(inputs.extras).patch }}.dmg
