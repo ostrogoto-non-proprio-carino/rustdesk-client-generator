@@ -496,6 +496,12 @@ jobs:
           mv ../rustdesk-${{ env.VERSION }}-${{ matrix.job.arch }}${{ matrix.job.suffix }}.apk ./${{ inputs.filename }}-${{ matrix.job.arch }}-${{ env.VERSION }}-${{ fromJson(inputs.extras).patch }}.apk
           popd
 
+      - name: Bundle the APKs
+        shell: bash
+        run: |
+          wget https://github.com/REAndroid/APKEditor/releases/download/V1.4.3/APKEditor-1.4.3.jar
+          java -jar APKEditor-1.4.3.jar m -i ./signed-apk -o ./signed-apk//${{ inputs.filename }}-bundle-${{ env.VERSION }}-${{ fromJson(inputs.extras).patch }}.apk
+
       - uses: r0adkll/sign-android-release@v1
         name: Sign app APK
         continue-on-error: true
