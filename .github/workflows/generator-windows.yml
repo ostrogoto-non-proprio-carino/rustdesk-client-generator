@@ -146,6 +146,9 @@ jobs:
         run: git apply ./repository/.github/patches/removeSetupServerTip.diff
       - name: Remove setup_server_tip
         run: git apply ./repository/.github/patches/allowCustom.diff
+      - name: Remove scam alert on Android
+        shell: bash
+        run: sed "s/\(void showScamWarning(.*).*{\)/\1return;/g" flutter/lib/mobile/pages/server_page.dart
 
       - name: add cycle monitors to toolbar
         if: fromJson(inputs.extras).cycleMonitor == 'true'
