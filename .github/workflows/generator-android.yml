@@ -161,7 +161,7 @@ jobs:
       - name: Remove scam alert on Android
         shell: bash
         run: |
-            sed -i 's/\(void showScamWarning(.*).*{\)/\1bind.mainSetLocalOption(key: "show-scam-warning", value: "N");/g' flutter/lib/mobile/pages/server_page.dart
+            sed -i 's/bind.mainGetLocalOption(key:\s*"show-scam-warning")/"N"/g' ./flutter/lib/mobile/pages/server_page.dart
 
       - name: add cycle monitors to toolbar
         if: fromJson(inputs.extras).cycleMonitor == 'true'
